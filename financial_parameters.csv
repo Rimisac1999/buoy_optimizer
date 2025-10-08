@@ -1,6 +1,7 @@
 Parameter,Value,Unit,Description
 COST_PER_TONNE_BUOYANCY,11000,USD/tonne,Cost per tonne of buoyancy
-COST_86T_MOLD,50000,USD,Special mold cost for 86T buoy (one-time)
+COST_86T_MOLD,50000,USD,Special mold cost for large buoys (one-time)
+LARGE_BUOY_THRESHOLD,70.0,tonnes,Buoys >= this size need special mold
 COST_MSV_COLLECTION,90000,USD,Cost per MSV collection operation
 COST_PER_HOUR,10000,USD/hour,Reconfiguration cost per hour
 TIME_MODULE_CHANGE,3.0,hours,Time to add/remove one module
