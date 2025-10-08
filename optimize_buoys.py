@@ -369,63 +369,131 @@ def optimize_buoy_allocation(ops_df: pd.DataFrame, buoy_df: pd.DataFrame,
         else:
             model.Add(y_name[name] == 0)
     
-    # Calculate maximum simultaneous buoys needed
-    # For each line, count how many physical buoys are in use
-    # Note: A series config counts as 2 physical buoys
-    line_ids = sorted(lines.keys())
-    max_buoys = {}
+    # Calculate maximum simultaneous buoys needed WITH MSV COLLECTION
+    # CRITICAL FIX: Track physical buoys by (base_code + module_count)
+    # This properly accounts for MSV collection/reuse and reconfiguration limits:
+    # - Shackles can be easily reconfigured (BC0.1 -> BC0.2 is the SAME physical buoy)
+    # - Modules define different physical buoys (BC0 vs BC1 are DIFFERENT buoys)
     
-    for line_id in line_ids:
-        line_ops_indices = lines[line_id]
-        # Get orders from the original full dataframe for this line
-        line_orders = [ops_df_full.at[orig_i, 'Order'] for orig_i in line_ops_indices if orig_i in ops_df_full.index]
-        # Map to filtered dataframe indices (exclude head operations)
-        line_ops = [i for i in range(N) if ops_df.at[i, 'Order'] in line_orders]
+    line_ids = sorted(lines.keys())
+    
+    # Build a mapping of all unique physical buoy IDs (base_code + module_count)
+    physical_buoy_ids = set()
+    for c in range(M):
+        config_code = buoy_df.at[c, 'BuoyConfig']
+        if not pd.isna(config_code):
+            # Extract base code (first 2 chars) and module count
+            base_code = config_code[:2] if len(config_code) >= 2 else config_code
+            module_count = int(buoy_df.at[c, 'ModuleSUB'])
+            physical_id = f"{base_code}{module_count}"
+            physical_buoy_ids.add(physical_id)
         
-        if not line_ops:
-            continue
-        
-        # Count physical buoys needed for this line
-        # For each single buoy type, track max count needed simultaneously
-        line_name_counts = {}
-        for name in single_buoy_names:
-            # This is the count of this buoy type needed in the line
-            count_var = model.NewIntVar(0, 2 * len(line_ops), f'line_{line_id}_count_{name}')
+        # For series configs, also add both buoys
+        if buoy_df.at[c, 'IsSeries']:
+            buoy1_config = buoy_df.at[c, 'Buoy1_Config']
+            buoy2_config = buoy_df.at[c, 'Buoy2_Config']
             
-            # Sum up contributions from each operation in this line
-            count_terms = []
+            if not pd.isna(buoy1_config):
+                base1 = buoy1_config[:2] if len(buoy1_config) >= 2 else buoy1_config
+                # Find the module count for this buoy1 config in the original df
+                buoy1_rows = buoy_df[buoy_df['BuoyConfig'] == buoy1_config]
+                if len(buoy1_rows) > 0:
+                    module1 = int(buoy1_rows.iloc[0]['ModuleSUB'])
+                    physical_buoy_ids.add(f"{base1}{module1}")
+            
+            if not pd.isna(buoy2_config):
+                base2 = buoy2_config[:2] if len(buoy2_config) >= 2 else buoy2_config
+                # Find the module count for this buoy2 config in the original df
+                buoy2_rows = buoy_df[buoy_df['BuoyConfig'] == buoy2_config]
+                if len(buoy2_rows) > 0:
+                    module2 = int(buoy2_rows.iloc[0]['ModuleSUB'])
+                    physical_buoy_ids.add(f"{base2}{module2}")
+    
+    physical_buoy_ids = sorted(physical_buoy_ids)
+    
+    # For each physical buoy ID, track max count needed across all lines
+    max_physical_counts = {}
+    
+    for physical_id in physical_buoy_ids:
+        # For this physical buoy, find the max count needed in any single line
+        physical_line_max_counts = []
+        
+        for line_id in line_ids:
+            line_ops_indices = lines[line_id]
+            # Get orders from the original full dataframe for this line
+            line_orders = [ops_df_full.at[orig_i, 'Order'] for orig_i in line_ops_indices if orig_i in ops_df_full.index]
+            # Map to filtered dataframe indices (exclude head operations)
+            line_ops = [i for i in range(N) if ops_df.at[i, 'Order'] in line_orders]
+            
+            if not line_ops:
+                continue
+            
+            # For this line, find the MAX count of this physical buoy needed in ANY SINGLE operation
+            # (operations within a line are sequential, so we only need the peak)
+            operation_counts = []
+            
             for i in line_ops:
+                # Count this physical buoy in operation i
+                op_count_terms = []
                 for c in feasible[i]:
                     buoy_config = buoy_df.loc[c]
                     contribution = 0
-                    if not buoy_config['IsSeries'] and buoy_config['Name'] == name:
-                        contribution = 1  # Single buoy of this type
-                    elif buoy_config['IsSeries']:
-                        # Count how many of this type are in the series
-                        if buoy_config['Buoy1_Name'] == name:
-                            contribution += 1
-                        if buoy_config['Buoy2_Name'] == name:
-                            contribution += 1
+                    
+                    if not buoy_config['IsSeries']:
+                        # Single buoy
+                        config_code = buoy_config['BuoyConfig']
+                        if not pd.isna(config_code):
+                            base = config_code[:2] if len(config_code) >= 2 else config_code
+                            modules = int(buoy_config['ModuleSUB'])
+                            if f"{base}{modules}" == physical_id:
+                                contribution = 1
+                    else:
+                        # Series - check both buoys
+                        buoy1_config = buoy_config['Buoy1_Config']
+                        buoy2_config = buoy_config['Buoy2_Config']
+                        
+                        # Check buoy1
+                        if not pd.isna(buoy1_config):
+                            base1 = buoy1_config[:2] if len(buoy1_config) >= 2 else buoy1_config
+                            buoy1_rows = buoy_df[buoy_df['BuoyConfig'] == buoy1_config]
+                            if len(buoy1_rows) > 0:
+                                module1 = int(buoy1_rows.iloc[0]['ModuleSUB'])
+                                if f"{base1}{module1}" == physical_id:
+                                    contribution += 1
+                        
+                        # Check buoy2
+                        if not pd.isna(buoy2_config):
+                            base2 = buoy2_config[:2] if len(buoy2_config) >= 2 else buoy2_config
+                            buoy2_rows = buoy_df[buoy_df['BuoyConfig'] == buoy2_config]
+                            if len(buoy2_rows) > 0:
+                                module2 = int(buoy2_rows.iloc[0]['ModuleSUB'])
+                                if f"{base2}{module2}" == physical_id:
+                                    contribution += 1
                     
                     if contribution > 0:
-                        count_terms.append(contribution * x[(i, c)])
+                        op_count_terms.append(contribution * x[(i, c)])
+                
+                if op_count_terms:
+                    # Create a variable for this operation's count
+                    op_count_var = model.NewIntVar(0, 10, f'line_{line_id}_op_{i}_phys_{physical_id}')
+                    model.Add(op_count_var == sum(op_count_terms))
+                    operation_counts.append(op_count_var)
             
-            if count_terms:
-                model.Add(count_var == sum(count_terms))
-            else:
-                model.Add(count_var == 0)
-            
-            line_name_counts[name] = count_var
+            # Max count for this physical buoy in this line (across all operations in line)
+            if operation_counts:
+                line_max_var = model.NewIntVar(0, 10, f'line_{line_id}_max_phys_{physical_id}')
+                model.AddMaxEquality(line_max_var, operation_counts)
+                physical_line_max_counts.append(line_max_var)
         
-        # Total physical buoys for this line
-        total_line_buoys = sum(line_name_counts.values())
-        max_buoys[line_id] = total_line_buoys
+        # Max count for this physical buoy across all lines
+        if physical_line_max_counts:
+            max_count_var = model.NewIntVar(0, 10, f'max_phys_{physical_id}')
+            model.AddMaxEquality(max_count_var, physical_line_max_counts)
+            max_physical_counts[physical_id] = max_count_var
     
-    # The total buoys to purchase is the maximum across all lines
-    # (since buoys are collected and reused between lines)
-    max_simultaneous = model.NewIntVar(0, 2 * N, 'max_simultaneous')
-    if max_buoys:
-        model.AddMaxEquality(max_simultaneous, list(max_buoys.values()))
+    # The total PHYSICAL buoys to purchase is the SUM of max counts per physical ID
+    # This correctly accounts for MSV collection and reconfiguration capabilities
+    max_simultaneous = sum(max_physical_counts.values()) if max_physical_counts else 0
     
     # Transition costs (within lines only)
     transition_cost_terms = []
@@ -514,6 +582,14 @@ def optimize_buoy_allocation(ops_df: pd.DataFrame, buoy_df: pd.DataFrame,
     max_buoys_needed = solver.Value(max_simultaneous)
     names_used = [name for name in single_buoy_names if solver.Value(y_name[name]) == 1]
     
+    # Get physical buoy breakdown
+    physical_breakdown = {}
+    for physical_id in physical_buoy_ids:
+        if physical_id in max_physical_counts:
+            count = solver.Value(max_physical_counts[physical_id])
+            if count > 0:
+                physical_breakdown[physical_id] = count
+    
     # VALIDATION: Verify all down-thrusts are in acceptable range
     results_df = pd.DataFrame(results)
     validation_errors = []
@@ -532,11 +608,17 @@ def optimize_buoy_allocation(ops_df: pd.DataFrame, buoy_df: pd.DataFrame,
         print("\n[OK] VALIDATION PASSED: All down-thrusts within range")
     
     print(f"\n=== OPTIMIZATION RESULTS ===")
-    print(f"Maximum buoys needed simultaneously: {max_buoys_needed}")
-    print(f"Unique buoy types used: {len(names_used)}")
-    print(f"Buoy types: {names_used}")
+    print(f"TOTAL PHYSICAL BUOYS TO PURCHASE: {max_buoys_needed}")
+    print(f"\nPhysical buoy breakdown (base_code + module_count):")
+    for physical_id, count in sorted(physical_breakdown.items()):
+        base_code = physical_id[:2]
+        module_count = physical_id[2:]
+        print(f"  {physical_id} ({base_code} with {module_count} module(s)): {count} buoy(s)")
     
-    return results_df, max_buoys_needed, names_used, infeasible_ops if infeasible_ops else []
+    print(f"\nUnique buoy families used: {len(names_used)}")
+    print(f"Families: {names_used}")
+    
+    return results_df, max_buoys_needed, names_used, infeasible_ops if infeasible_ops else [], physical_breakdown
 
 # ============ MAIN ============
 
@@ -568,11 +650,21 @@ def main():
         print(f"    {line_id}: {len(ops_indices)} operations")
     
     print("\n[4/5] Running optimization...")
-    results_df, max_buoys, names_used, infeasible_ops = optimize_buoy_allocation(ops_df, buoy_df, lines)
+    results_df, max_buoys, names_used, infeasible_ops, physical_breakdown = optimize_buoy_allocation(ops_df, buoy_df, lines)
     
     print("\n[5/5] Saving results...")
     results_df.to_csv(OUTPUT_CSV, index=False)
     print(f"  Results saved to: {OUTPUT_CSV}")
+    
+    # Save physical buoy breakdown
+    if physical_breakdown:
+        breakdown_df = pd.DataFrame([
+            {'PhysicalID': pid, 'BaseCode': pid[:2], 'ModuleCount': int(pid[2:]), 'Quantity': count}
+            for pid, count in sorted(physical_breakdown.items())
+        ])
+        breakdown_csv = OUTPUT_CSV.replace('.csv', '_physical_breakdown.csv')
+        breakdown_df.to_csv(breakdown_csv, index=False)
+        print(f"  Physical buoy breakdown saved to: {breakdown_csv}")
     
     # Save infeasible operations if any
     if infeasible_ops:
