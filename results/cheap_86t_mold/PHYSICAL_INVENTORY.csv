@@ -1,0 +1,9 @@
+Physical_ID,Base_Code,Buoy_Family,Module_Count,Quantity,Buoyancy_Per_Unit_Tonnes,Cost_Per_Unit_USD,Total_Cost_USD,Is_86T
+BA0,BA,Tandem Big 3m,0,1,50.8,558800.0,558800.0,No
+BB0,BB,Tandem Small 3m,0,2,44.5,489500.0,979000.0,No
+BC0,BC,Single Big (4.5 m),0,1,86.0,946000.0,946000.0,Yes
+BC1,BC,Single Big (4.5 m),1,1,86.0,946000.0,946000.0,Yes
+BC2,BC,Single Big (4.5 m),2,1,86.0,946000.0,946000.0,Yes
+BD0,BD,Single Small (3.0 m),0,1,38.0,418000.0,418000.0,No
+BD1,BD,Single Small (3.0 m),1,1,38.0,418000.0,418000.0,No
+BD2,BD,Single Small (3.0 m),2,1,38.0,418000.0,418000.0,No

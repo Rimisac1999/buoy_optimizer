@@ -1,0 +1,9 @@
+LineID,ToOrder,FromOrder,BuoyName,BuoyConfig,NeedsReconfig
+Line_07,16,15,Single Small (3.0 m),BD1.1,False
+Line_07,16,15,Tandem Big 3m,BA0.0,False
+Line_08,21,20,Tandem Small 3m,BB0.0,False
+Line_08,21,20,Tandem Small 3m,BB0.0,False
+Line_16,41,40,Tandem Big 3m,BA0.0,False
+Line_16,42,40,Single Small (3.0 m),BD0.1,False
+Line_19,52,51,Single Small (3.0 m),BD1.2,False
+Line_19,52,51,Tandem Big 3m,BA0.0,False

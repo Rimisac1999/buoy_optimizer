@@ -1,0 +1,52 @@
+Order,LineID,Flowline,TAG,TYPE,SubW_tonnes,BuoyName,BuoyConfig,IsSeries,Buoy1_Name,Buoy1_Config,Buoy2_Name,Buoy2_Config,Shackles,Modules,Upthrust_tonnes,DownThrust_tonnes,CanCollectBuoys
+1,Line_01,"31-12""-PR-10-0201",31‐FT‐10‐1201,Initiation,85.57,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.0+BA0.0,TRUE,Single Small (3.0 m),BD1.0,Tandem Big 3m,BA0.0,0,1,84,1.57,FALSE
+2,Line_01,"31-12""-PR-10-0201",31‐FT‐10‐0201,Laydown,88.45,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.2+BA0.0,TRUE,Single Small (3.0 m),BD0.2,Tandem Big 3m,BA0.0,2,0,85.8,2.65,TRUE
+3,Line_02,"31-12""-PR-10-0202",31‐FT‐10‐1202,Initiation,85.57,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.0+BA0.0,TRUE,Single Small (3.0 m),BD1.0,Tandem Big 3m,BA0.0,0,1,84,1.57,FALSE
+4,Line_02,"31-12""-PR-10-0202",31‐FT‐10‐0202,Laydown,88.45,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.2+BA0.0,TRUE,Single Small (3.0 m),BD0.2,Tandem Big 3m,BA0.0,2,0,85.8,2.65,TRUE
+5,Line_03,"31-12""-PR-10-0301",31‐FT‐10‐2301,Initiation,85.57,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.0+BA0.0,TRUE,Single Small (3.0 m),BD1.0,Tandem Big 3m,BA0.0,0,1,84,1.57,FALSE
+6,Line_03,"31-12""-PR-10-0301",31‐FT‐10‐1301,Laydown,88.45,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.2+BA0.0,TRUE,Single Small (3.0 m),BD0.2,Tandem Big 3m,BA0.0,2,0,85.8,2.65,TRUE
+7,Line_04,"31-12""-PR-10-0302",31‐FT‐10‐2302,Initiation,85.57,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.0+BA0.0,TRUE,Single Small (3.0 m),BD1.0,Tandem Big 3m,BA0.0,0,1,84,1.57,FALSE
+8,Line_04,"31-12""-PR-10-0302",31‐FT‐10‐1302,Laydown,88.45,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.2+BA0.0,TRUE,Single Small (3.0 m),BD0.2,Tandem Big 3m,BA0.0,2,0,85.8,2.65,TRUE
+9,Line_05,"31-12""-PR-10-0401",31‐FT‐10‐2401,Initiation,88.45,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.2+BA0.0,TRUE,Single Small (3.0 m),BD0.2,Tandem Big 3m,BA0.0,2,0,85.8,2.65,FALSE
+10,Line_05,"31-12""-PR-10-0401",31‐FT‐10‐3401,Laydown,85.36,Series: Tandem Small 3m + Tandem Small 3m,BB0.2+BB0.2,TRUE,Tandem Small 3m,BB0.2,Tandem Small 3m,BB0.2,4,0,83,2.36,TRUE
+11,Line_06,"31-12""-PR-10-0402",31‐FT‐10‐2402,Initiation,88.45,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.2+BA0.0,TRUE,Single Small (3.0 m),BD0.2,Tandem Big 3m,BA0.0,2,0,85.8,2.65,FALSE
+12,Line_06,"31-12""-PR-10-0402",31‐FT‐10‐3402,Laydown,85.57,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.0+BA0.0,TRUE,Single Small (3.0 m),BD1.0,Tandem Big 3m,BA0.0,0,1,84,1.57,TRUE
+13,Line_07,"31-8""-GI-30-0500",31‐FT‐30‐4500,Initiation,99.33,Series: Tandem Big 3m + Tandem Big 3m,BA0.2+BA0.1,TRUE,Tandem Big 3m,BA0.2,Tandem Big 3m,BA0.1,3,0,97.1,2.23,FALSE
+14,Line_07,"31-8""-GI-30-0400",31‐IT‐30‐3400,ILT,84.66,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.1+BA0.0,TRUE,Single Small (3.0 m),BD1.1,Tandem Big 3m,BA0.0,1,1,82.5,2.16,FALSE
+15,Line_07,"31-8""-GI-30-0300",31‐IT‐30‐2300,ILT,84.66,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.1+BA0.0,TRUE,Single Small (3.0 m),BD1.1,Tandem Big 3m,BA0.0,1,1,82.5,2.16,FALSE
+16,Line_07,"31-8""-GI-30-0200",31‐IT‐30‐1200,ILT,84.66,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.1+BA0.0,TRUE,Single Small (3.0 m),BD1.1,Tandem Big 3m,BA0.0,1,1,82.5,2.16,FALSE
+17,Line_07,"31-8""-GI-30-0200",31‐FT‐30‐0200,Laydown,81.06,Series: Single Small (3.0 m) + Tandem Big 3m,BD2.0+BA0.0,TRUE,Single Small (3.0 m),BD2.0,Tandem Big 3m,BA0.0,0,2,79.2,1.86,TRUE
+18,Line_08,"31-10""-WI-50-0200",31‐FT‐50‐0200,Initiation,88.48,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.2+BA0.0,TRUE,Single Small (3.0 m),BD0.2,Tandem Big 3m,BA0.0,2,0,85.8,2.68,FALSE
+19,Line_08,"31-10""-WI-50-0200",31‐IT‐50‐1200,ILT,90.9,Series: Tandem Small 3m + Tandem Small 3m,BB0.0+BB0.0,TRUE,Tandem Small 3m,BB0.0,Tandem Small 3m,BB0.0,0,0,89,1.9,FALSE
+20,Line_08,"31-10""-WI-50-0300",31‐IT‐50‐2300,ILT,90.9,Series: Tandem Small 3m + Tandem Small 3m,BB0.0+BB0.0,TRUE,Tandem Small 3m,BB0.0,Tandem Small 3m,BB0.0,0,0,89,1.9,FALSE
+21,Line_08,"31-10""-WI-50-0400",31‐IT‐50‐3400,ILT,90.9,Series: Tandem Small 3m + Tandem Small 3m,BB0.0+BB0.0,TRUE,Tandem Small 3m,BB0.0,Tandem Small 3m,BB0.0,0,0,89,1.9,FALSE
+22,Line_08,"31-10""-WI-50-0500",31‐FT‐50‐4500,Laydown,94.5,Series: Tandem Small 3m + Tandem Big 3m,BB0.2+BA0.0,TRUE,Tandem Small 3m,BB0.2,Tandem Big 3m,BA0.0,2,0,92.3,2.2,TRUE
+23,Line_09,"32-10""-PR-10-0201",32‐FT‐10‐0201,Initiation,86.47,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.0+BA0.0,TRUE,Single Small (3.0 m),BD1.0,Tandem Big 3m,BA0.0,0,1,84,2.47,FALSE
+24,Line_09,"32-10""-PR-10-0201",32‐FT‐10‐1201,Laydown,84.06,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.1+BA0.0,TRUE,Single Small (3.0 m),BD1.1,Tandem Big 3m,BA0.0,1,1,82.5,1.56,TRUE
+25,Line_10,"32-10""-PR-10-0202",32‐FT‐10‐0202,Initiation,86.47,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.0+BA0.0,TRUE,Single Small (3.0 m),BD1.0,Tandem Big 3m,BA0.0,0,1,84,2.47,FALSE
+26,Line_10,"32-10""-PR-10-0202",32‐FT‐10‐1202,Laydown,84.06,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.1+BA0.0,TRUE,Single Small (3.0 m),BD1.1,Tandem Big 3m,BA0.0,1,1,82.5,1.56,TRUE
+27,Line_11,"32-10""-PR-10-0301",32‐FT‐10‐1301,Initiation,86.47,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.0+BA0.0,TRUE,Single Small (3.0 m),BD1.0,Tandem Big 3m,BA0.0,0,1,84,2.47,FALSE
+28,Line_11,"32-10""-PR-10-0301",32‐FT‐10‐2301,Laydown,84.06,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.1+BA0.0,TRUE,Single Small (3.0 m),BD1.1,Tandem Big 3m,BA0.0,1,1,82.5,1.56,TRUE
+29,Line_12,"32-10""-PR-10-0302",32‐FT‐10‐1302,Initiation,86.47,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.0+BA0.0,TRUE,Single Small (3.0 m),BD1.0,Tandem Big 3m,BA0.0,0,1,84,2.47,FALSE
+30,Line_12,"32-10""-PR-10-0302",32‐FT‐10‐2302,Laydown,84.06,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.1+BA0.0,TRUE,Single Small (3.0 m),BD1.1,Tandem Big 3m,BA0.0,1,1,82.5,1.56,TRUE
+31,Line_13,"32-10""-PR-10-0401",32‐FT‐10‐2401,Initiation,86.47,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.0+BA0.0,TRUE,Single Small (3.0 m),BD1.0,Tandem Big 3m,BA0.0,0,1,84,2.47,FALSE
+32,Line_13,"32-10""-PR-10-0401",32‐FT‐10‐3401,Laydown,84.06,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.1+BA0.0,TRUE,Single Small (3.0 m),BD1.1,Tandem Big 3m,BA0.0,1,1,82.5,1.56,TRUE
+33,Line_14,"32-10""-PR-10-0402",32‐FT‐10‐2402,Initiation,86.47,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.0+BA0.0,TRUE,Single Small (3.0 m),BD1.0,Tandem Big 3m,BA0.0,0,1,84,2.47,FALSE
+34,Line_14,"32-10""-PR-10-0402",32‐FT‐10‐3402,Laydown,83.83,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.2+BA0.0,TRUE,Single Small (3.0 m),BD1.2,Tandem Big 3m,BA0.0,2,1,81,2.83,TRUE
+35,Line_15,"32-12""-GI-30-0200",32‐FT‐30‐0200,Initiation,84.24,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.1+BA0.0,TRUE,Single Small (3.0 m),BD1.1,Tandem Big 3m,BA0.0,1,1,82.5,1.74,FALSE
+36,Line_15,"32-10""-GI-30-0200",32‐FT‐30‐0201,Laydown,93.08,Series: Tandem Small 3m + Tandem Big 3m,BB0.2+BA0.1,TRUE,Tandem Small 3m,BB0.2,Tandem Big 3m,BA0.1,3,0,90.8,2.28,TRUE
+37,Line_16,"32-10""-GI-30-0600",32‐FT‐30‐4600,Initiation,100.55,Series: Tandem Big 3m + Tandem Big 3m,BA0.2+BA0.0,TRUE,Tandem Big 3m,BA0.2,Tandem Big 3m,BA0.0,2,0,98.6,1.95,FALSE
+38,Line_16,"32-10""-GI-30-0500",32‐IT‐30‐3500,ILT,89.75,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.1+BA0.0,TRUE,Single Small (3.0 m),BD0.1,Tandem Big 3m,BA0.0,1,0,87.3,2.45,FALSE
+39,Line_16,"32-10""-GI-30-0400",32‐IT‐30‐2400,ILT,89.75,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.1+BA0.0,TRUE,Single Small (3.0 m),BD0.1,Tandem Big 3m,BA0.0,1,0,87.3,2.45,FALSE
+40,Line_16,"32-10""-GI-30-0300",32‐IT‐30‐1300,ILT,89.75,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.1+BA0.0,TRUE,Single Small (3.0 m),BD0.1,Tandem Big 3m,BA0.0,1,0,87.3,2.45,FALSE
+41,Line_16,"32-10""-GI-30-0100",32‐IT‐30‐0300,ILT,100.95,Series: Tandem Big 3m + Tandem Big 3m,BA0.2+BA0.0,TRUE,Tandem Big 3m,BA0.2,Tandem Big 3m,BA0.0,2,0,98.6,2.35,FALSE
+42,Line_16,33-10''-GI-30-0200,33‐IT‐30‐1100,ILT,89.29,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.1+BA0.0,TRUE,Single Small (3.0 m),BD0.1,Tandem Big 3m,BA0.0,1,0,87.3,1.99,FALSE
+44,Line_17,32-10''-WI-50-0200,32‐FT‐50‐0200,Initiation,82.84,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.2+BA0.0,TRUE,Single Small (3.0 m),BD1.2,Tandem Big 3m,BA0.0,2,1,81,1.84,FALSE
+45,Line_17,32-10''-WI-50-0200,32‐FT‐50‐0201,Laydown,100.18,Series: Tandem Big 3m + Tandem Big 3m,BA0.2+BA0.0,TRUE,Tandem Big 3m,BA0.2,Tandem Big 3m,BA0.0,2,0,98.6,1.58,TRUE
+46,Line_18,33-10''-WI-50-0100,33‐FT‐50‐0100,Initiation,82.84,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.2+BA0.0,TRUE,Single Small (3.0 m),BD1.2,Tandem Big 3m,BA0.0,2,1,81,1.84,FALSE
+47,Line_18,33-10''-WI-50-0100,33‐IT‐50‐1100,ILT,90.37,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.0+BA0.0,TRUE,Single Small (3.0 m),BD0.0,Tandem Big 3m,BA0.0,0,0,88.8,1.57,FALSE
+49,Line_19,32-8''-WI-050-0300,32‐FT‐50‐0300,Initiation,93.23,Series: Tandem Small 3m + Tandem Big 3m,BB0.2+BA0.1,TRUE,Tandem Small 3m,BB0.2,Tandem Big 3m,BA0.1,3,0,90.8,2.43,FALSE
+50,Line_19,32-8''-WI-050-0300,32‐IT‐50‐1300,ILT,83.8,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.2+BA0.0,TRUE,Single Small (3.0 m),BD1.2,Tandem Big 3m,BA0.0,2,1,81,2.8,FALSE
+51,Line_19,32-8''-WI-050-0400,32‐IT‐50‐2400,ILT,83.8,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.2+BA0.0,TRUE,Single Small (3.0 m),BD1.2,Tandem Big 3m,BA0.0,2,1,81,2.8,FALSE
+52,Line_19,32-8''-WI-050-0500,32‐IT‐50‐3500,ILT,83.8,Series: Single Small (3.0 m) + Tandem Big 3m,BD1.2+BA0.0,TRUE,Single Small (3.0 m),BD1.2,Tandem Big 3m,BA0.0,2,1,81,2.8,FALSE
+53,Line_19,32-8''-WI-050-0600,32‐FT‐50‐4600,Laydown,91.53,Series: Single Small (3.0 m) + Tandem Big 3m,BD0.0+BA0.0,TRUE,Single Small (3.0 m),BD0.0,Tandem Big 3m,BA0.0,0,0,88.8,2.73,TRUE

@@ -1,0 +1,15 @@
+Parameter,Value,Unit,Description
+COST_PER_TONNE_BUOYANCY,11000,USD/tonne,Cost per tonne of buoyancy
+COST_86T_MOLD,250000,USD,Special mold cost for 86T buoy (one-time)
+COST_MSV_COLLECTION,90000,USD,Cost per MSV collection operation
+COST_PER_HOUR,10000,USD/hour,Reconfiguration cost per hour
+TIME_MODULE_CHANGE,3.0,hours,Time to add/remove one module
+TIME_SHACKLE_CHANGE,1.0,hours,Time to add/remove one shackle
+TIME_STRING_CHANGE,5.0,hours,Time to swap entire buoy string
+TIME_RECONFIGURATION_BASE,0.5,hours,Base time for any reconfiguration
+DOWN_THRUST_MIN,1.5,tonnes,Minimum down-thrust requirement
+DOWN_THRUST_MAX,3.0,tonnes,Maximum down-thrust requirement
+MIN_OPS_FOR_INTRALINE_REUSE,4,count,Minimum operations to enable intra-line reuse
+COLLECTION_INTERVAL,2,count,Collect buoys after every N operations
+MAX_SOLVE_TIME,120.0,seconds,Maximum solver time
+NUM_WORKERS,8,count,Number of parallel solver workers
