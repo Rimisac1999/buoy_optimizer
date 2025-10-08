@@ -13,19 +13,28 @@ from collections import defaultdict
 # ============ CONFIGURATION ============
 PLANNING_CSV = "20251008_Data_From_Planning_and_TECH.csv"
 BUOYS_CSV = "20251008_Buoys_Config_Table.csv"
+FINANCIAL_PARAMS_CSV = "financial_parameters.csv"
 OUTPUT_CSV = "buoy_optimization_plan_19lines.csv"
 
-# Target down-thrust range (tonnes)
+# Target down-thrust range (tonnes) - will be loaded from financial params
 DOWN_THRUST_MIN = 1.5
 DOWN_THRUST_MAX = 3.0
 
-# Cost weights for optimization
-COST_BUY_BUOY = 1000.0          # Cost per buoy to purchase (highest priority)
-COST_SWITCH_TYPE = 50.0         # Cost to switch buoy type (e.g., Single Big to Tandem)
-COST_RECONFIG = 10.0            # Base cost for any reconfiguration
-COST_SHACKLE_CHANGE = 2.0       # Cost per shackle added/removed
-COST_MODULE_CHANGE = 5.0        # Cost per module added/removed
-COST_DIFF_FACTOR = 1.0          # Weight for difficulty factor
+# Real buoy costs (USD) - based on buoyancy
+BUOY_FAMILIES = {
+    'BA': {'name': 'Tandem Big 3m', 'base_buoyancy': 50.8, 'is_86t': False},
+    'BB': {'name': 'Tandem Small 3m', 'base_buoyancy': 44.5, 'is_86t': False},
+    'BC': {'name': 'Single Big (4.5 m)', 'base_buoyancy': 86.0, 'is_86t': True},
+    'BD': {'name': 'Single Small (3.0 m)', 'base_buoyancy': 38.0, 'is_86t': False},
+}
+
+# Financial parameters - will be loaded from CSV
+COST_PER_TONNE_BUOYANCY = 11000.0  # USD per tonne
+COST_86T_MOLD = 250000.0            # One-time mold cost for 86T buoys
+COST_PER_HOUR = 10000.0             # Reconfiguration hourly rate
+TIME_MODULE_CHANGE = 3.0            # Hours per module
+TIME_SHACKLE_CHANGE = 1.0           # Hours per shackle
+TIME_STRING_CHANGE = 5.0            # Hours for full string change
 
 # Solver settings
 MAX_SOLVE_TIME = 120.0          # seconds (increased for complex problems)
@@ -61,6 +70,68 @@ class BuoyConfig:
     def get_type_family(self) -> str:
         """Extract buoy type family (e.g., 'Single Big', 'Tandem Small')"""
         return self.name
+
+# ============ FINANCIAL PARAMETERS ============
+
+def load_financial_parameters(filepath: str = FINANCIAL_PARAMS_CSV) -> Dict:
+    """Load financial and operational parameters from CSV"""
+    global COST_PER_TONNE_BUOYANCY, COST_86T_MOLD, COST_PER_HOUR
+    global TIME_MODULE_CHANGE, TIME_SHACKLE_CHANGE, TIME_STRING_CHANGE
+    global DOWN_THRUST_MIN, DOWN_THRUST_MAX
+    
+    try:
+        df = pd.read_csv(filepath)
+        params = {}
+        for _, row in df.iterrows():
+            param_name = row['Parameter']
+            value = float(row['Value'])
+            params[param_name] = value
+        
+        # Update global parameters
+        COST_PER_TONNE_BUOYANCY = params.get('COST_PER_TONNE_BUOYANCY', COST_PER_TONNE_BUOYANCY)
+        COST_86T_MOLD = params.get('COST_86T_MOLD', COST_86T_MOLD)
+        COST_PER_HOUR = params.get('COST_PER_HOUR', COST_PER_HOUR)
+        TIME_MODULE_CHANGE = params.get('TIME_MODULE_CHANGE', TIME_MODULE_CHANGE)
+        TIME_SHACKLE_CHANGE = params.get('TIME_SHACKLE_CHANGE', TIME_SHACKLE_CHANGE)
+        TIME_STRING_CHANGE = params.get('TIME_STRING_CHANGE', TIME_STRING_CHANGE)
+        DOWN_THRUST_MIN = params.get('DOWN_THRUST_MIN', DOWN_THRUST_MIN)
+        DOWN_THRUST_MAX = params.get('DOWN_THRUST_MAX', DOWN_THRUST_MAX)
+        
+        print(f"  Loaded financial parameters from {filepath}")
+        print(f"    Cost per tonne: ${COST_PER_TONNE_BUOYANCY:,.0f}")
+        print(f"    86T mold cost: ${COST_86T_MOLD:,.0f}")
+        print(f"    Reconfiguration: ${COST_PER_HOUR:,.0f}/hour")
+        
+        return params
+    except FileNotFoundError:
+        print(f"  WARNING: {filepath} not found. Using default values.")
+        return {}
+
+def calculate_physical_buoy_cost(physical_id: str, count_86t_buoys: int) -> float:
+    """
+    Calculate the actual USD cost of a physical buoy.
+    
+    Args:
+        physical_id: e.g., 'BA0', 'BC2'
+        count_86t_buoys: Total count of 86T buoys (for mold cost amortization)
+    
+    Returns:
+        Cost in USD
+    """
+    base_code = physical_id[:2]
+    
+    if base_code not in BUOY_FAMILIES:
+        return 0.0
+    
+    family_info = BUOY_FAMILIES[base_code]
+    buoyancy_cost = family_info['base_buoyancy'] * COST_PER_TONNE_BUOYANCY
+    
+    # Add amortized mold cost for 86T buoys
+    if family_info['is_86t'] and count_86t_buoys > 0:
+        mold_cost_per_buoy = COST_86T_MOLD / count_86t_buoys
+        return buoyancy_cost + mold_cost_per_buoy
+    
+    return buoyancy_cost
 
 # ============ DATA LOADING ============
 
@@ -206,28 +277,25 @@ def get_feasible_configs(sub_w: float, buoy_df: pd.DataFrame) -> List[int]:
 # ============ COST CALCULATIONS ============
 
 def reconfig_cost(buoy_a: pd.Series, buoy_b: pd.Series) -> float:
-    """Calculate cost to reconfigure from buoy A to buoy B"""
-    cost = 0.0
+    """
+    Calculate REAL DOLLAR cost to reconfigure from buoy A to buoy B.
+    Based on actual time and hourly rates.
+    """
+    if buoy_a['BuoyConfig'] == buoy_b['BuoyConfig']:
+        return 0.0
     
-    # Base reconfiguration cost
-    cost += COST_RECONFIG
-    
-    # Type change (different buoy families)
+    # Different buoy family = full string change
     if buoy_a['Name'] != buoy_b['Name']:
-        cost += COST_SWITCH_TYPE
+        time_hours = TIME_STRING_CHANGE
+    else:
+        # Same family - add time for module and shackle changes
+        time_hours = 0.0
+        module_diff = abs(buoy_a['ModuleSUB'] - buoy_b['ModuleSUB'])
+        shackle_diff = abs(buoy_a['ShackleCNT'] - buoy_b['ShackleCNT'])
+        time_hours += module_diff * TIME_MODULE_CHANGE
+        time_hours += shackle_diff * TIME_SHACKLE_CHANGE
     
-    # Shackle changes
-    shackle_diff = abs(buoy_a['ShackleCNT'] - buoy_b['ShackleCNT'])
-    cost += COST_SHACKLE_CHANGE * shackle_diff
-    
-    # Module changes
-    module_diff = abs(buoy_a['ModuleSUB'] - buoy_b['ModuleSUB'])
-    cost += COST_MODULE_CHANGE * module_diff
-    
-    # Difficulty factor
-    cost += COST_DIFF_FACTOR * (buoy_a['DiffFactor'] + buoy_b['DiffFactor'])
-    
-    return cost
+    return time_hours * COST_PER_HOUR
 
 # ============ OPTIMIZATION ============
 
@@ -517,11 +585,72 @@ def optimize_buoy_allocation(ops_df: pd.DataFrame, buoy_df: pd.DataFrame,
                     if cost > 0:
                         transition_cost_terms.append(int(cost * 100) * z)
     
-    # Objective: Minimize (purchase cost + reconfiguration cost)
-    purchase_cost = int(COST_BUY_BUOY * 100) * max_simultaneous
+    # ============ OBJECTIVE: MINIMIZE REAL DOLLAR COST ============
+    # 
+    # Calculate ACTUAL purchase costs for each physical buoy type
+    # This allows the optimizer to intelligently trade off:
+    #   - One expensive 86T buoy + mold cost
+    #   - vs Two cheaper smaller buoys
+    #
+    
+    # Collect all 86T buoy count variables
+    buoys_86t_vars = []
+    for physical_id, count_var in max_physical_counts.items():
+        base_code = physical_id[:2]
+        if base_code in BUOY_FAMILIES and BUOY_FAMILIES[base_code]['is_86t']:
+            buoys_86t_vars.append(count_var)
+    
+    # Create a binary variable: uses_86t = 1 if any 86T buoys purchased
+    uses_86t = model.NewBoolVar('uses_86t')
+    
+    if buoys_86t_vars:
+        # Total 86T buoys = sum of all 86T variants
+        total_86t_buoys = sum(buoys_86t_vars)
+        
+        # Link uses_86t to whether any 86T buoys are purchased
+        # uses_86t = 1 if total_86t_buoys >= 1
+        # uses_86t = 0 if total_86t_buoys == 0
+        model.Add(total_86t_buoys >= 1).OnlyEnforceIf(uses_86t)
+        model.Add(total_86t_buoys == 0).OnlyEnforceIf(uses_86t.Not())
+    else:
+        # No 86T buoys in the problem
+        model.Add(uses_86t == 0)
+    
+    # Calculate purchase costs with REAL DOLLAR values
+    purchase_cost_terms = []
+    
+    for physical_id, count_var in max_physical_counts.items():
+        base_code = physical_id[:2]
+        if base_code in BUOY_FAMILIES:
+            family_info = BUOY_FAMILIES[base_code]
+            
+            # Base buoyancy cost
+            buoyancy_cost = family_info['base_buoyancy'] * COST_PER_TONNE_BUOYANCY
+            
+            # Convert to integer cents for solver (multiply by 100)
+            cost_per_buoy_cents = int(buoyancy_cost)
+            purchase_cost_terms.append(cost_per_buoy_cents * count_var)
+    
+    # Add 86T mold cost (one-time, only if any 86T buoys purchased)
+    mold_cost_cents = int(COST_86T_MOLD)
+    mold_cost_term = mold_cost_cents * uses_86t
+    
+    total_purchase_cost = sum(purchase_cost_terms) + mold_cost_term if purchase_cost_terms else mold_cost_term
     total_transition_cost = sum(transition_cost_terms) if transition_cost_terms else 0
     
-    model.Minimize(purchase_cost + total_transition_cost)
+    # OBJECTIVE: Minimize total real dollar cost
+    model.Minimize(total_purchase_cost + total_transition_cost)
+    
+    print(f"\n=== Cost-Based Optimization ===")
+    print(f"Using REAL DOLLAR COSTS for buoy purchase decisions:")
+    for base_code, info in BUOY_FAMILIES.items():
+        cost = info['base_buoyancy'] * COST_PER_TONNE_BUOYANCY
+        print(f"  {info['name']:25s} ${cost:>10,.0f}/buoy")
+    print(f"  {'86T Mold (one-time)':25s} ${COST_86T_MOLD:>10,.0f}")
+    print(f"Optimizer will intelligently choose between:")
+    print(f"  - Buying fewer expensive buoys")
+    print(f"  - Buying more cheaper buoys")
+    print(f"  - Trading off mold cost vs multiple buoys")
     
     # Solve
     print("\n=== Solving ===")
@@ -625,34 +754,39 @@ def optimize_buoy_allocation(ops_df: pd.DataFrame, buoy_df: pd.DataFrame,
 def main():
     print("=" * 60)
     print("BUOY OPTIMIZATION FOR ACT_160 CAMPAIGN")
+    print("COST-BASED OPTIMIZER (Real Dollar Costs)")
     print("=" * 60)
     
+    # Load financial parameters first
+    print("\n[1/6] Loading financial parameters...")
+    load_financial_parameters()
+    
     # Load data
-    print("\n[1/5] Loading planning data...")
+    print("\n[2/6] Loading planning data...")
     ops_df = load_planning_data(PLANNING_CSV)
     print(f"  Loaded {len(ops_df)} operations")
     
-    print("\n[2/5] Loading buoy configurations...")
+    print("\n[3/6] Loading buoy configurations...")
     buoy_df = load_buoy_configs(BUOYS_CSV)
     print(f"  Loaded {len(buoy_df)} single buoy configurations")
     
-    print("\n[2b/5] Generating 2-buoy series combinations...")
+    print("\n[4/6] Generating 2-buoy series combinations...")
     buoy_df = generate_series_combinations(buoy_df, ops_df)
     single_count = buoy_df[~buoy_df['IsSeries']].shape[0]
     series_count = buoy_df[buoy_df['IsSeries']].shape[0]
     print(f"  Generated {series_count} optimized series combinations")
     print(f"  Total configurations: {len(buoy_df)} (single + series)")
     
-    print("\n[3/5] Identifying flowlines and collection points...")
+    print("\n[5/6] Identifying flowlines and collection points...")
     ops_df, lines = identify_lines(ops_df)
     print(f"  Identified {len(lines)} lines")
     for line_id, ops_indices in lines.items():
         print(f"    {line_id}: {len(ops_indices)} operations")
     
-    print("\n[4/5] Running optimization...")
+    print("\n[6/6] Running COST-BASED optimization...")
     results_df, max_buoys, names_used, infeasible_ops, physical_breakdown = optimize_buoy_allocation(ops_df, buoy_df, lines)
     
-    print("\n[5/5] Saving results...")
+    print("\n=== Saving results ===")
     results_df.to_csv(OUTPUT_CSV, index=False)
     print(f"  Results saved to: {OUTPUT_CSV}")
     
@@ -673,12 +807,38 @@ def main():
         infeasible_df.to_csv(infeasible_csv, index=False)
         print(f"  [!] Infeasible operations saved to: {infeasible_csv}")
     
-    # Display summary
+    # Display summary with COST BREAKDOWN
     print("\n" + "=" * 60)
-    print("SUMMARY")
+    print("COST-BASED OPTIMIZATION SUMMARY")
     print("=" * 60)
-    print(f"Total physical buoys to purchase: {max_buoys}")
-    print(f"Buoy types needed: {len(names_used)}")
+    print(f"\nPhysical buoys to purchase: {max_buoys}")
+    
+    # Calculate actual costs
+    total_buoy_cost = 0.0
+    uses_86t = False
+    
+    print(f"\nCost breakdown by buoy type:")
+    for physical_id, count in sorted(physical_breakdown.items()):
+        base_code = physical_id[:2]
+        if base_code in BUOY_FAMILIES:
+            family_info = BUOY_FAMILIES[base_code]
+            buoy_cost = family_info['base_buoyancy'] * COST_PER_TONNE_BUOYANCY
+            subtotal = buoy_cost * count
+            total_buoy_cost += subtotal
+            
+            if family_info['is_86t']:
+                uses_86t = True
+            
+            print(f"  {physical_id} ({family_info['name']}): {count}x @ ${buoy_cost:,.0f} = ${subtotal:,.0f}")
+    
+    mold_cost = COST_86T_MOLD if uses_86t else 0.0
+    total_purchase_cost = total_buoy_cost + mold_cost
+    
+    if uses_86t:
+        print(f"\n  86T Mold (one-time): ${mold_cost:,.0f}")
+    
+    print(f"\n  TOTAL PURCHASE COST: ${total_purchase_cost:,.0f}")
+    print(f"\nBuoy family diversity: {len(names_used)} types")
     
     # Count physical buoys by type across all lines
     buoy_type_counts = {}
